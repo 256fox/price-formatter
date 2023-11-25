@@ -1,0 +1,44 @@
+version: "3.9"
+
+networks:
+    priceFormatter:
+        name: priceFormatter
+
+services:
+    php:
+        build:
+            context: ./docker/local/php
+        container_name: php
+        volumes:
+            - .:/var/www/html
+        networks:
+            - priceFormatter
+
+    mysql:
+        image: mysql:8.2
+        container_name: mysql
+        ports:
+            - 3306:3306
+        volumes:
+            - ./docker/local/mysql/data:/var/lib/mysql
+        environment:
+            MYSQL_DATABASE: price_formatter
+            MYSQL_USER: price
+            MYSQL_PASSWORD: secret
+            MYSQL_ROOT_PASSWORD: secret
+        networks:
+            - priceFormatter
+
+    nginx:
+        build:
+            context: ./docker/local/nginx
+        depends_on:
+            - php
+            - mysql
+        container_name: nginx
+        ports:
+            - 80:80
+        volumes:
+            - .:/var/www/html
+        networks:
+            - priceFormatter
